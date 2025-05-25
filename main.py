@@ -20,7 +20,7 @@ if "langfuse" in st.secrets:
     os.environ["LANGFUSE_HOST"] = st.secrets["langfuse"]["LANGFUSE_HOST"]
 
 st.title("Strands MCPエージェント")
-st.text("あなたの好きなMCPサーバーを設定して、Strands Agentsを動かしてみよう！")
+st.text("あなたの好きなMCPサーバーを設定して、Strands Agents（strandsagents.com）を動かしてみよう！")
 
 model_id = st.text_input("BedrockのモデルID（Claude 4はクォータ制限でエラーになります）", "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
 mcp_args = st.text_input("MCPサーバーのパッケージ名（uvx用）", "awslabs.aws-documentation-mcp-server@latest")
