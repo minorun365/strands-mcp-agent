@@ -5,7 +5,7 @@ from strands import Agent
 from strands.models import BedrockModel
 from strands.tools.mcp import MCPClient
 from mcp import stdio_client, StdioServerParameters
-import uuid
+import base64
 
 # Streamlit secretsからAWS認証情報を設定
 if "aws" in st.secrets:
@@ -15,12 +15,25 @@ if "aws" in st.secrets:
 
 # Streamlit secretsからLangfuse認証情報を設定
 if "langfuse" in st.secrets:
+    # Langfuse環境変数を設定
     os.environ["LANGFUSE_PUBLIC_KEY"] = st.secrets["langfuse"]["LANGFUSE_PUBLIC_KEY"]
     os.environ["LANGFUSE_SECRET_KEY"] = st.secrets["langfuse"]["LANGFUSE_SECRET_KEY"]
     os.environ["LANGFUSE_HOST"] = st.secrets["langfuse"]["LANGFUSE_HOST"]
+    
+    # OpenTelemetry設定
+    langfuse_host = st.secrets["langfuse"]["LANGFUSE_HOST"]
+    public_key = st.secrets["langfuse"]["LANGFUSE_PUBLIC_KEY"]
+    secret_key = st.secrets["langfuse"]["LANGFUSE_SECRET_KEY"]
+    
+    # OpenTelemetryエンドポイントを設定
+    otel_endpoint = f"{langfuse_host}/api/public/otel/v1/traces"
+    auth_token = base64.b64encode(f"{public_key}:{secret_key}".encode()).decode()
+    
+    os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"] = otel_endpoint
+    os.environ["OTEL_EXPORTER_OTLP_HEADERS"] = f"Authorization=Basic {auth_token}"
 
 st.title("Strands MCPエージェント")
-st.text("あなたの好きなMCPサーバーを設定して、Strands Agents（strandsagents.com）を動かしてみよう！")
+st.text("あなたの好きなMCPサーバーを設定して、Strands Agents SDKを動かしてみよう！")
 
 model_id = st.text_input("BedrockのモデルID（Claude 4はクォータ制限でエラーになります）", "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
 mcp_args = st.text_input("MCPサーバーのパッケージ名（uvx用）", "awslabs.aws-documentation-mcp-server@latest")
