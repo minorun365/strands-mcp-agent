@@ -22,7 +22,7 @@ if "langfuse" in st.secrets:
 st.title("Strands MCPエージェント")
 st.text("あなたの好きなMCPサーバーを設定して、Strands Agentsを動かしてみよう！")
 
-model_id = st.text_input("BedrockのモデルID", "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
+model_id = st.text_input("BedrockのモデルID（Claude 4はクォータ制限でエラーになります）", "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
 mcp_args = st.text_input("MCPサーバーのパッケージ名（uvx用）", "awslabs.aws-documentation-mcp-server@latest")
 question = st.text_input("質問を入力", "BedrockのClaude 4 OpusのモデルIDは？")
 
