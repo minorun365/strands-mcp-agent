@@ -6,8 +6,7 @@ from strands.models import BedrockModel
 from strands.tools.mcp import MCPClient
 from mcp import stdio_client, StdioServerParameters
 
-
-# Streamlit secretsからAWS認証情報を設定
+# 環境変数の設定
 if "aws" in st.secrets:
     os.environ["AWS_ACCESS_KEY_ID"] = st.secrets["aws"]["AWS_ACCESS_KEY_ID"]
     os.environ["AWS_SECRET_ACCESS_KEY"] = st.secrets["aws"]["AWS_SECRET_ACCESS_KEY"]
@@ -16,8 +15,13 @@ if "aws" in st.secrets:
 st.title("Strands MCPエージェント")
 st.text("あなたの好きなMCPサーバーを設定して、Strands Agents SDKを動かしてみよう！")
 
-model_id = st.text_input("BedrockのモデルID（Claude 4はクォータ制限でエラーになります）", "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
-mcp_args = st.text_input("MCPサーバーのパッケージ名（uvx用）", "awslabs.aws-documentation-mcp-server@latest")
+# サイドバー
+with st.sidebar:
+    st.header("設定")
+    model_id = st.text_input("BedrockのモデルID（一部モデルはクォータ厳しめ）", "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
+    mcp_args = st.text_input("MCPサーバーのパッケージ名（uvx用）", "awslabs.aws-documentation-mcp-server@latest")
+
+# メインエリア
 question = st.text_input("質問を入力", "BedrockのClaude Opus 4のモデルIDは？")
 
 
