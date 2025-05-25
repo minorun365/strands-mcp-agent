@@ -21,10 +21,11 @@ if "langfuse" in st.secrets:
     os.environ["LANGFUSE_HOST"] = st.secrets["langfuse"]["LANGFUSE_HOST"]
 
 st.title("Strands MCPエージェント")
+st.text("あなたの好きなMCPサーバーを設定して、Strands Agentsを動かしてみよう！")
 
 model_id = st.text_input("BedrockのモデルID", "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
 mcp_args = st.text_input("MCPサーバーのパッケージ名（uvx用）", "awslabs.aws-documentation-mcp-server@latest")
-question = st.text_input("質問を入力")
+question = st.text_input("質問を入力", "BedrockのClaude 4 OpusのモデルIDは？")
 
 
 def create_mcp_client(mcp_args):
