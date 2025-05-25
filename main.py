@@ -12,16 +12,15 @@ if "aws" in st.secrets:
     os.environ["AWS_SECRET_ACCESS_KEY"] = st.secrets["aws"]["AWS_SECRET_ACCESS_KEY"]
     os.environ["AWS_DEFAULT_REGION"] = st.secrets["aws"]["AWS_DEFAULT_REGION"]
 
+# メインエリア
 st.title("Strands MCPエージェント")
 st.text("あなたの好きなMCPサーバーを設定して、Strands Agents SDKを動かしてみよう！")
+question = st.text_input("質問を入力", "BedrockのClaude Opus 4のモデルIDは？")
 
 # サイドバー
 with st.sidebar:
     model_id = st.text_input("BedrockのモデルID（一部モデルはクォータ厳しめ）", "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
     mcp_args = st.text_input("MCPサーバーのパッケージ名（uvx用）", "awslabs.aws-documentation-mcp-server@latest")
-
-# メインエリア
-question = st.text_input("質問を入力", "BedrockのClaude Opus 4のモデルIDは？")
 
 
 def create_mcp_client(mcp_args):
@@ -85,6 +84,7 @@ async def stream_response(agent, question, container):
         text_holder.markdown(buffer)
 
 
+# ボタンを押したら生成開始
 if st.button("質問する"):
     client = create_mcp_client(mcp_args)
     
