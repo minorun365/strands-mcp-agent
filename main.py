@@ -14,7 +14,7 @@ if "aws" in st.secrets:
 
 # メインエリア
 st.title("Strands MCPエージェント")
-st.text("あなたの好きなMCPサーバーを設定して、Strands Agents SDKを動かしてみよう！")
+st.text("👈 サイドバーで好きなMCPサーバーを設定して、Strands Agents SDKを動かしてみよう！")
 question = st.text_input("質問を入力", "Bedrockでマルチエージェントは作れる？")
 
 # サイドバー
