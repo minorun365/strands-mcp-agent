@@ -2,7 +2,7 @@
 
 AWS BedrockとMCP（Model Context Protocol）サーバーを統合したStrands AgentsのStreamlitアプリケーションです。
 
-参考： strandsagents.com
+参考： http://strandsagents.com
 
 ## 概要
 
