@@ -17,7 +17,6 @@ st.text("あなたの好きなMCPサーバーを設定して、Strands Agents SD
 
 # サイドバー
 with st.sidebar:
-    st.header("設定")
     model_id = st.text_input("BedrockのモデルID（一部モデルはクォータ厳しめ）", "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
     mcp_args = st.text_input("MCPサーバーのパッケージ名（uvx用）", "awslabs.aws-documentation-mcp-server@latest")
 
