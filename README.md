@@ -13,6 +13,7 @@ AWS BedrockとMCP（Model Context Protocol）サーバーを統合したStrands�
 - 🌐 **Streamlit Webインターフェース**: エージェントと対話するための使いやすいWebインターフェース
 - ⚡ **リアルタイムストリーミング**: ツール実行の可視化とともにエージェントの応答をライブストリーミング
 - 🛠️ **AWS Bedrock統合**: AWS BedrockのClaudeモデルを活用してインテリジェントな応答を生成
+- 📊 **Langfuseトレース**: Langfuseによる詳細なトレースと観測機能
 
 ## 前提条件
 

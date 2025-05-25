@@ -5,12 +5,20 @@ from strands import Agent
 from strands.models import BedrockModel
 from strands.tools.mcp import MCPClient
 from mcp import stdio_client, StdioServerParameters
+from langfuse import Langfuse
+from strands.callbacks import LangfuseTracingHandler
 
 # Streamlit secretsからAWS認証情報を設定
 if "aws" in st.secrets:
     os.environ["AWS_ACCESS_KEY_ID"] = st.secrets["aws"]["AWS_ACCESS_KEY_ID"]
     os.environ["AWS_SECRET_ACCESS_KEY"] = st.secrets["aws"]["AWS_SECRET_ACCESS_KEY"]
     os.environ["AWS_DEFAULT_REGION"] = st.secrets["aws"]["AWS_DEFAULT_REGION"]
+
+# Streamlit secretsからLangfuse認証情報を設定
+if "langfuse" in st.secrets:
+    os.environ["LANGFUSE_PUBLIC_KEY"] = st.secrets["langfuse"]["LANGFUSE_PUBLIC_KEY"]
+    os.environ["LANGFUSE_SECRET_KEY"] = st.secrets["langfuse"]["LANGFUSE_SECRET_KEY"]
+    os.environ["LANGFUSE_HOST"] = st.secrets["langfuse"]["LANGFUSE_HOST"]
 
 st.title("Strands MCPエージェント")
 
@@ -28,9 +36,16 @@ def create_mcp_client(mcp_args):
 
 def create_agent(client, model_id):
     """エージェントを作成"""
+    # Langfuseトレーシングハンドラーを作成
+    tracing_handler = LangfuseTracingHandler(
+        trace_name="strands-mcp-agent",
+        langfuse_client=Langfuse()
+    )
+    
     return Agent(
         model=BedrockModel(model_id=model_id),
-        tools=client.list_tools_sync()
+        tools=client.list_tools_sync(),
+        callbacks=[tracing_handler]
     )
 
 
