@@ -24,7 +24,7 @@ st.text("あなたの好きなMCPサーバーを設定して、Strands Agentsを
 
 model_id = st.text_input("BedrockのモデルID（Claude 4はクォータ制限でエラーになります）", "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
 mcp_args = st.text_input("MCPサーバーのパッケージ名（uvx用）", "awslabs.aws-documentation-mcp-server@latest")
-question = st.text_input("質問を入力", "BedrockのClaude 4 OpusのモデルIDは？")
+question = st.text_input("質問を入力", "BedrockのClaude Opus 4のモデルIDは？")
 
 
 def create_mcp_client(mcp_args):
