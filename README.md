@@ -19,7 +19,7 @@ AWS BedrockとMCP（Model Context Protocol）サーバーを統合したStrands 
 
 ## 前提条件
 
-- Python 3.12以上
+- Python 3.10以上
 - Bedrockアクセス権限を持つAWSアカウント
 - 設定済みのAWS認証情報
 - 使用したいMCPサーバーへのアクセス
