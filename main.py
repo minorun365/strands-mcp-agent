@@ -19,8 +19,9 @@ question = st.text_input("質問を入力", "Bedrockでマルチエージェン�
 
 # サイドバー
 with st.sidebar:
-    model_id = st.text_input("BedrockのモデルID（一部モデルはクォータ厳しめ）", "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
+    model_id = st.text_input("BedrockのモデルID", "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
     mcp_args = st.text_input("MCPサーバーのパッケージ名（uvx用）", "awslabs.aws-documentation-mcp-server@latest")
+    st.text("一部の新しいモデル（Claude 4など）は、クォータが厳しく応答なしエラーが発生することがあります")
 
 
 def create_mcp_client(mcp_args):
