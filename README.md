@@ -65,6 +65,11 @@ Streamlit Community Cloudにデプロイする場合:
 AWS_ACCESS_KEY_ID = "your-access-key-id"
 AWS_SECRET_ACCESS_KEY = "your-secret-access-key"
 AWS_DEFAULT_REGION = "us-west-2"
+
+[langfuse]
+LANGFUSE_PUBLIC_KEY = "your-langfuse-public-key"
+LANGFUSE_SECRET_KEY = "your-langfuse-secret-key"
+LANGFUSE_HOST = "https://us.cloud.langfuse.com"
 ```
 
 ## 使い方
