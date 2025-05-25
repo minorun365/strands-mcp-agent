@@ -5,32 +5,13 @@ from strands import Agent
 from strands.models import BedrockModel
 from strands.tools.mcp import MCPClient
 from mcp import stdio_client, StdioServerParameters
-import base64
+
 
 # Streamlit secretsからAWS認証情報を設定
 if "aws" in st.secrets:
     os.environ["AWS_ACCESS_KEY_ID"] = st.secrets["aws"]["AWS_ACCESS_KEY_ID"]
     os.environ["AWS_SECRET_ACCESS_KEY"] = st.secrets["aws"]["AWS_SECRET_ACCESS_KEY"]
     os.environ["AWS_DEFAULT_REGION"] = st.secrets["aws"]["AWS_DEFAULT_REGION"]
-
-# Streamlit secretsからLangfuse認証情報を設定
-if "langfuse" in st.secrets:
-    # Langfuse環境変数を設定
-    os.environ["LANGFUSE_PUBLIC_KEY"] = st.secrets["langfuse"]["LANGFUSE_PUBLIC_KEY"]
-    os.environ["LANGFUSE_SECRET_KEY"] = st.secrets["langfuse"]["LANGFUSE_SECRET_KEY"]
-    os.environ["LANGFUSE_HOST"] = st.secrets["langfuse"]["LANGFUSE_HOST"]
-    
-    # OpenTelemetry設定
-    langfuse_host = st.secrets["langfuse"]["LANGFUSE_HOST"]
-    public_key = st.secrets["langfuse"]["LANGFUSE_PUBLIC_KEY"]
-    secret_key = st.secrets["langfuse"]["LANGFUSE_SECRET_KEY"]
-    
-    # OpenTelemetryエンドポイントを設定
-    otel_endpoint = f"{langfuse_host}/api/public/otel/v1/traces"
-    auth_token = base64.b64encode(f"{public_key}:{secret_key}".encode()).decode()
-    
-    os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"] = otel_endpoint
-    os.environ["OTEL_EXPORTER_OTLP_HEADERS"] = f"Authorization=Basic {auth_token}"
 
 st.title("Strands MCPエージェント")
 st.text("あなたの好きなMCPサーバーを設定して、Strands Agents SDKを動かしてみよう！")
@@ -49,19 +30,9 @@ def create_mcp_client(mcp_args):
 
 def create_agent(client, model_id):
     """エージェントを作成"""
-    # Langfuseトレーシングは trace_attributes で設定
     return Agent(
         model=BedrockModel(model_id=model_id),
-        tools=client.list_tools_sync(),
-        trace_attributes={
-            "session.id": f"strands-mcp-{os.getpid()}",
-            "user.id": "streamlit-user",
-            "langfuse.tags": [
-                "strands-mcp-agent",
-                "streamlit-app",
-                "bedrock-model"
-            ]
-        }
+        tools=client.list_tools_sync()
     )
 
 
