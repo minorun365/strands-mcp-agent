@@ -1,6 +1,8 @@
 # Strands MCP エージェント
 
-AWS BedrockとMCP（Model Context Protocol）サーバーを統合したStrandsエージェントのStreamlitアプリケーションです。
+AWS BedrockとMCP（Model Context Protocol）サーバーを統合したStrands AgentsのStreamlitアプリケーションです。
+
+参考： strandsagents.com
 
 ## 概要
 
