@@ -101,8 +101,6 @@ streamlit run main.py
 このアプリケーションは、stdioプロトコルをサポートする任意のMCPサーバーに接続できます。例:
 
 - `awslabs.aws-documentation-mcp-server@latest` - AWSドキュメント検索
-- `mcp-server-filesystem@latest` - ファイルシステム操作
-- `mcp-server-github@latest` - GitHubリポジトリ操作
 
 ## Streamlit Community Cloudへのデプロイ
 
