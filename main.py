@@ -14,13 +14,15 @@ if "aws" in st.secrets:
 
 # メインエリア
 st.title("Strands MCPエージェント")
-st.text("👈 サイドバーで好きなMCPサーバーを設定して、Strands Agents SDKを動かしてみよう！")
+st.markdown("👈 サイドバーで好きなMCPサーバーを設定して、[Strands Agents SDK](https://aws.amazon.com/jp/blogs/news/introducing-strands-agents-an-open-source-ai-agents-sdk/) を動かしてみよう！")
 question = st.text_input("質問を入力", "Bedrockでマルチエージェントは作れる？")
 
 # サイドバー
 with st.sidebar:
-    model_id = st.text_input("BedrockのモデルID", "us.anthropic.claude-sonnet-4-20250514-v1:0")
     mcp_args = st.text_input("MCPサーバーのパッケージ名（uvx用）", "awslabs.aws-documentation-mcp-server@latest")
+    model_id = st.text_input("BedrockのモデルID", "us.anthropic.claude-sonnet-4-20250514-v1:0")
+    st.text("")
+    st.markdown("このアプリの作り方 [https://qiita.com/minorun365/items/dd05a3e4938482ac6055](https://qiita.com/minorun365/items/dd05a3e4938482ac6055)")
 
 
 def create_mcp_client(mcp_args):
