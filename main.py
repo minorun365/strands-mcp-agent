@@ -10,7 +10,6 @@ from mcp import stdio_client, StdioServerParameters
 st.set_page_config(
     page_title="Strands MCPエージェント",
     page_icon="☁️",
-    initial_sidebar_state="expanded",
     menu_items={'About': "Strands Agents SDKで作ったMCPホストアプリです。"}
 )
 
