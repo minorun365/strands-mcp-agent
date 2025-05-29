@@ -1,8 +1,9 @@
 # Strands MCP エージェント
 
-あなたの好きなMCPサーバーを設定できる！ AWS発のOSS「Strands Agents SDK」で作ったAIエージェントWebアプリです。
+あなたの好きなMCPサーバーを設定できる！ AWS発のOSS「[Strands Agents SDK](http://strandsagents.com)」で作ったAIエージェントWebアプリです。
 
-参考： http://strandsagents.com
+- このアプリの作り方： https://qiita.com/minorun365/items/428ca505a8dd40136b5d
+
 
 ## 概要
 
