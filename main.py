@@ -6,6 +6,14 @@ from strands.models import BedrockModel
 from strands.tools.mcp import MCPClient
 from mcp import stdio_client, StdioServerParameters
 
+# ページ設定
+st.set_page_config(
+    page_title="Strands MCPエージェント",
+    page_icon="☁️",
+    initial_sidebar_state="expanded",
+    menu_items={'About': "Strands Agents SDKで作ったMCPホストアプリです。"}
+)
+
 # 環境変数の設定
 if "aws" in st.secrets:
     os.environ["AWS_ACCESS_KEY_ID"] = st.secrets["aws"]["AWS_ACCESS_KEY_ID"]
