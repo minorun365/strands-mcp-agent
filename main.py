@@ -13,11 +13,73 @@ st.set_page_config(
     menu_items={'About': "Strands Agents SDKで作ったMCPホストアプリです。"}
 )
 
+# セッション状態の初期化
+if 'dark_mode' not in st.session_state:
+    st.session_state.dark_mode = False
+
+def apply_dark_mode():
+    """ダークモードのCSSを適用"""
+    if st.session_state.dark_mode:
+        st.markdown("""
+        <style>
+        .stApp {
+            background-color: #0e1117;
+            color: #fafafa;
+        }
+        .stTextInput > div > div > input {
+            background-color: #262730;
+            color: #fafafa;
+            border-color: #4a4a4a;
+        }
+        .stSelectbox > div > div > select {
+            background-color: #262730;
+            color: #fafafa;
+            border-color: #4a4a4a;
+        }
+        .stButton > button {
+            background-color: #ff4b4b;
+            color: white;
+            border: none;
+        }
+        .stButton > button:hover {
+            background-color: #ff6c6c;
+        }
+        .stSidebar {
+            background-color: #1e1e1e;
+        }
+        .stSidebar > div {
+            background-color: #1e1e1e;
+        }
+        .stMarkdown {
+            color: #fafafa;
+        }
+        .stInfo {
+            background-color: #1e3a8a;
+            color: #fafafa;
+        }
+        .stSpinner > div {
+            border-top-color: #ff4b4b;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <style>
+        .stApp {
+            background-color: #ffffff;
+            color: #262730;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
 # 環境変数の設定
 if "aws" in st.secrets:
     os.environ["AWS_ACCESS_KEY_ID"] = st.secrets["aws"]["AWS_ACCESS_KEY_ID"]
     os.environ["AWS_SECRET_ACCESS_KEY"] = st.secrets["aws"]["AWS_SECRET_ACCESS_KEY"]
     os.environ["AWS_DEFAULT_REGION"] = st.secrets["aws"]["AWS_DEFAULT_REGION"]
+
+# ダークモードを適用
+apply_dark_mode()
 
 # メインエリア
 st.title("Strands MCPエージェント")
@@ -26,10 +88,19 @@ question = st.text_input("質問を入力", "Bedrockでマルチエージェン�
 
 # サイドバー
 with st.sidebar:
+    # ダークモード切り替え
+    st.markdown("### ⚙️ 設定")
+    dark_mode = st.toggle("🌙 ダークモード", value=st.session_state.dark_mode)
+    if dark_mode != st.session_state.dark_mode:
+        st.session_state.dark_mode = dark_mode
+        st.rerun()
+    
+    st.markdown("### 🔧 MCP設定")
     package_manager = st.selectbox("パッケージマネージャー", ["uvx", "npx"])
     mcp_args = st.text_input(f"MCPサーバーのパッケージ名（{package_manager}用）", "awslabs.aws-documentation-mcp-server@latest")
     model_id = st.text_input("BedrockのモデルID", "us.anthropic.claude-sonnet-4-20250514-v1:0")
     st.text("")
+    st.markdown("### 📚 参考リンク")
     st.markdown("このアプリの作り方 [https://qiita.com/minorun365/items/dd05a3e4938482ac6055](https://qiita.com/minorun365/items/dd05a3e4938482ac6055)")
 
 
