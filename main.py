@@ -26,16 +26,23 @@ question = st.text_input("質問を入力", "Bedrockでマルチエージェン�
 
 # サイドバー
 with st.sidebar:
-    mcp_args = st.text_input("MCPサーバーのパッケージ名（uvx用）", "awslabs.aws-documentation-mcp-server@latest")
+    package_manager = st.selectbox("パッケージマネージャー", ["uvx", "npx"])
+    mcp_args = st.text_input(f"MCPサーバーのパッケージ名（{package_manager}用）", "awslabs.aws-documentation-mcp-server@latest")
     model_id = st.text_input("BedrockのモデルID", "us.anthropic.claude-sonnet-4-20250514-v1:0")
     st.text("")
     st.markdown("このアプリの作り方 [https://qiita.com/minorun365/items/dd05a3e4938482ac6055](https://qiita.com/minorun365/items/dd05a3e4938482ac6055)")
 
 
-def create_mcp_client(mcp_args):
+def create_mcp_client(mcp_args, package_manager):
     """MCPクライアントを作成"""
+    # npxの場合は-yフラグを追加
+    if package_manager == "npx":
+        args = ["-y", mcp_args]
+    else:
+        args = [mcp_args]
+    
     return MCPClient(lambda: stdio_client(
-        StdioServerParameters(command="uvx", args=[mcp_args])
+        StdioServerParameters(command=package_manager, args=args)
     ))
 
 
@@ -95,7 +102,7 @@ async def stream_response(agent, question, container):
 
 # ボタンを押したら生成開始
 if st.button("質問する"):
-    client = create_mcp_client(mcp_args)
+    client = create_mcp_client(mcp_args, package_manager)
     
     with st.spinner("回答を生成中…"):
         with client:
