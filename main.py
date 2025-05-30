@@ -26,9 +26,49 @@ question = st.text_input("質問を入力", "Bedrockでマルチエージェン�
 
 # サイドバー
 with st.sidebar:
-    package_manager = st.selectbox("パッケージマネージャー", ["uvx", "npx"])
-    mcp_args = st.text_input(f"MCPサーバーのパッケージ名（{package_manager}用）", "awslabs.aws-documentation-mcp-server@latest")
     model_id = st.text_input("BedrockのモデルID", "us.anthropic.claude-sonnet-4-20250514-v1:0")
+    
+    st.subheader("MCPサーバー設定")
+    
+    # セッションステートの初期化
+    if 'mcp_servers' not in st.session_state:
+        st.session_state.mcp_servers = [
+            {"package_manager": "uvx", "package": "awslabs.aws-documentation-mcp-server@latest"}
+        ]
+    
+    # MCPサーバーのリストを表示
+    servers_to_remove = []
+    for i, server in enumerate(st.session_state.mcp_servers):
+        col1, col2, col3 = st.columns([2, 5, 1])
+        with col1:
+            server['package_manager'] = st.selectbox(
+                "種類",
+                ["uvx", "npx"],
+                key=f"pm_{i}",
+                index=["uvx", "npx"].index(server['package_manager'])
+            )
+        with col2:
+            server['package'] = st.text_input(
+                "パッケージ名",
+                value=server['package'],
+                key=f"pkg_{i}",
+                label_visibility="collapsed"
+            )
+        with col3:
+            if st.button("削除", key=f"del_{i}"):
+                servers_to_remove.append(i)
+    
+    # 削除処理
+    for idx in reversed(servers_to_remove):
+        st.session_state.mcp_servers.pop(idx)
+    
+    # 追加ボタン
+    if st.button("➕ MCPサーバーを追加"):
+        st.session_state.mcp_servers.append(
+            {"package_manager": "uvx", "package": ""}
+        )
+        st.rerun()
+    
     st.text("")
     st.markdown("このアプリの作り方 [https://qiita.com/minorun365/items/dd05a3e4938482ac6055](https://qiita.com/minorun365/items/dd05a3e4938482ac6055)")
 
@@ -46,11 +86,11 @@ def create_mcp_client(mcp_args, package_manager):
     ))
 
 
-def create_agent(client, model_id):
-    """エージェントを作成"""
+def create_agent_with_multiple_tools(tools, model_id):
+    """複数のツールを持つエージェントを作成"""
     return Agent(
         model=BedrockModel(model_id=model_id),
-        tools=client.list_tools_sync()
+        tools=tools
     )
 
 
