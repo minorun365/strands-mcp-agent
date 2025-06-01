@@ -13,7 +13,9 @@
 
 - 🤖 **Strandsエージェント統合**: AIエージェント構築のためのStrandsフレームワークを活用
 - 🔌 **MCPサーバーサポート**: stdioプロトコル経由で任意のMCPサーバーに接続
-- 🌐 **Streamlit Webインターフェース**: エージェントと対話するための使いやすいWebインターフェース
+- 🌐 **リモートMCPサーバー対応**: HTTP/WebSocket経由でリモートMCPサーバーに接続
+- 🔒 **認証サポート**: Bearer TokenやAPI Keyによる認証に対応
+- 🌍 **Streamlit Webインターフェース**: エージェントと対話するための使いやすいWebインターフェース
 - ⚡ **リアルタイムストリーミング**: ツール実行の可視化とともにエージェントの応答をライブストリーミング
 - 🛠️ **AWS Bedrock統合**: AWS BedrockのClaudeモデルを活用してインテリジェントな応答を生成
 - 📊 **Langfuseトレース**: Langfuseによる詳細なトレースと観測機能
@@ -86,28 +88,56 @@ streamlit run main.py
 
 ### アプリケーションの使用
 
-1. **モデルID**: BedrockモデルIDを入力（デフォルト: `us.anthropic.claude-3-7-sonnet-20250219-v1:0`）
+#### ローカルMCPサーバーの場合:
+1. **接続タイプ**: 「ローカル」を選択
 2. **パッケージマネージャー**: uvxまたはnpxを選択
 3. **MCPサーバー**: 選択したパッケージマネージャー用のMCPサーバーパッケージ名を指定（例: `awslabs.aws-documentation-mcp-server@latest`）
-4. **質問**: クエリを入力
-5. 「質問する」をクリックして送信
+
+#### リモートMCPサーバーの場合:
+1. **接続タイプ**: 「リモート」を選択
+2. **リモート接続方式**: HTTPまたはWebSocketを選択
+3. **MCPサーバーのURL**: リモートサーバーのURLを入力
+   - HTTP: `https://your-mcp-server.com/mcp`
+   - WebSocket: `wss://your-mcp-server.com/mcp`
+4. **認証設定**（オプション）:
+   - Bearer Token認証
+   - API Key認証（カスタムヘッダー名対応）
+
+#### 共通設定:
+1. **モデルID**: BedrockモデルIDを入力（デフォルト: `us.anthropic.claude-sonnet-4-20250514-v1:0`）
+2. **質問**: クエリを入力
+3. 「質問する」をクリックして送信
 
 エージェントは以下を実行します:
-- 指定されたMCPサーバーに接続
+- 指定されたMCPサーバーに接続（ローカルまたはリモート）
 - 選択したBedrockモデルを使用してクエリを処理
 - リアルタイムで応答をストリーミング
 - ツールの実行を発生時に表示
 
 ## サポートされているMCPサーバー
 
-このアプリケーションは、stdioプロトコルをサポートする任意のMCPサーバーに接続できます。
+このアプリケーションは、stdio、HTTP、WebSocketプロトコルをサポートする任意のMCPサーバーに接続できます。
 
-### uvxパッケージの例:
+### ローカルMCPサーバー（stdio）
+
+#### uvxパッケージの例:
 - `awslabs.aws-documentation-mcp-server@latest` - AWSドキュメント検索
 
-### npxパッケージの例:
+#### npxパッケージの例:
 - `@modelcontextprotocol/server-filesystem` - ファイルシステムアクセス
 - `@modelcontextprotocol/server-github` - GitHub統合
+
+### リモートMCPサーバー（HTTP/WebSocket）
+
+リモートMCPサーバーは、JSON-RPC 2.0プロトコルを使用してHTTPまたはWebSocket経由で通信します。
+
+#### サポートされるエンドポイント:
+- `tools/list` - 利用可能なツールの一覧を取得
+- `tools/call` - 指定されたツールを実行
+
+#### 認証方式:
+- **Bearer Token**: `Authorization: Bearer <token>` ヘッダー
+- **API Key**: カスタムヘッダー（例: `X-API-Key: <key>`）
 
 ## Streamlit Community Cloudへのデプロイ
 

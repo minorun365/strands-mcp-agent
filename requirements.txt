@@ -3,3 +3,5 @@ boto3
 streamlit
 strands-agents
 strands-agents-builder
+httpx
+websockets
