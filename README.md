@@ -87,9 +87,10 @@ streamlit run main.py
 ### アプリケーションの使用
 
 1. **モデルID**: BedrockモデルIDを入力（デフォルト: `us.anthropic.claude-3-7-sonnet-20250219-v1:0`）
-2. **MCPサーバー**: uvx用のMCPサーバーパッケージ名を指定（例: `awslabs.aws-documentation-mcp-server@latest`）
-3. **質問**: クエリを入力
-4. 「質問する」をクリックして送信
+2. **パッケージマネージャー**: uvxまたはnpxを選択
+3. **MCPサーバー**: 選択したパッケージマネージャー用のMCPサーバーパッケージ名を指定（例: `awslabs.aws-documentation-mcp-server@latest`）
+4. **質問**: クエリを入力
+5. 「質問する」をクリックして送信
 
 エージェントは以下を実行します:
 - 指定されたMCPサーバーに接続
@@ -99,9 +100,14 @@ streamlit run main.py
 
 ## サポートされているMCPサーバー
 
-このアプリケーションは、stdioプロトコルをサポートする任意のMCPサーバーに接続できます。例:
+このアプリケーションは、stdioプロトコルをサポートする任意のMCPサーバーに接続できます。
 
+### uvxパッケージの例:
 - `awslabs.aws-documentation-mcp-server@latest` - AWSドキュメント検索
+
+### npxパッケージの例:
+- `@modelcontextprotocol/server-filesystem` - ファイルシステムアクセス
+- `@modelcontextprotocol/server-github` - GitHub統合
 
 ## Streamlit Community Cloudへのデプロイ
 

@@ -61,10 +61,16 @@ with st.sidebar:
     st.markdown("このアプリの作り方（Qiita） [https://qiita.com/minorun365/items/dd05a3e4938482ac6055](https://qiita.com/minorun365/items/dd05a3e4938482ac6055)")
 
 
-def create_mcp_client(mcp_args):
+def create_mcp_client(mcp_args, package_manager):
     """MCPクライアントを作成"""
+    # npxの場合は-yフラグを追加
+    if package_manager == "npx":
+        args = ["-y", mcp_args]
+    else:
+        args = [mcp_args]
+    
     return MCPClient(lambda: stdio_client(
-        StdioServerParameters(command="uvx", args=[mcp_args])
+        StdioServerParameters(command=package_manager, args=args)
     ))
 
 
