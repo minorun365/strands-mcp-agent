@@ -9,7 +9,7 @@ from mcp import stdio_client, StdioServerParameters
 # ページ設定
 st.set_page_config(
     page_title="Strands MCPエージェント",
-    page_icon="☁️",
+    page_icon="⛓️",
     menu_items={'About': "Strands Agents SDKで作ったMCPホストアプリです。"}
 )
 
@@ -22,12 +22,41 @@ if "aws" in st.secrets:
 # メインエリア
 st.title("Strands MCPエージェント")
 st.markdown("👈 サイドバーで好きなMCPサーバーを設定して、[Strands Agents SDK](https://aws.amazon.com/jp/blogs/news/introducing-strands-agents-an-open-source-ai-agents-sdk/) を動かしてみよう！")
-question = st.text_input("質問を入力", "Bedrockでマルチエージェントは作れる？")
+question = st.text_area("質問を入力", "このブログのAWS技術レベルを判定して。専門用語はドキュメントで検索してね　https://developers.kddi.com/blog/xSJ3RiApHHEY1WfsJTuTx", height=80)
+
+# セッション状態の初期化
+if "mcp_servers" not in st.session_state:
+    st.session_state.mcp_servers = [
+        "mcp-server-fetch",
+        "mcp-aws-level-checker",
+        "awslabs.aws-documentation-mcp-server"
+    ]
 
 # サイドバー
 with st.sidebar:
     st.title("MCPサーバー設定")
-    mcp_args = st.text_input("uvx用のパッケージ名", "awslabs.aws-documentation-mcp-server@latest")
+    
+    # MCPサーバーのリスト表示と編集
+    for i, server in enumerate(st.session_state.mcp_servers):
+        col1, col2 = st.columns([5, 1])
+        with col1:
+            st.session_state.mcp_servers[i] = st.text_input(
+                f"uvxパッケージ名{i+1}", 
+                value=server, 
+                key=f"mcp_server_{i}"
+            )
+        with col2:
+            st.write("")  # 空白行で位置調整
+            if st.button("🗑️", key=f"delete_{i}", help="削除"):
+                st.session_state.mcp_servers.pop(i)
+                st.rerun()
+    
+    # サーバー追加ボタン
+    if st.button("➕ MCPサーバーを追加"):
+        st.session_state.mcp_servers.append("")
+        st.rerun()
+    
+    st.text("")
     st.text("")
     st.markdown("このアプリの作り方（Qiita） [https://qiita.com/minorun365/items/dd05a3e4938482ac6055](https://qiita.com/minorun365/items/dd05a3e4938482ac6055)")
 
@@ -39,11 +68,19 @@ def create_mcp_client(mcp_args):
     ))
 
 
-def create_agent(client):
-    """エージェントを作成"""
+def create_agent(clients):
+    """複数のMCPクライアントからツールを集約してエージェントを作成"""
+    all_tools = []
+    for client in clients:
+        tools = client.list_tools_sync()
+        all_tools.extend(tools)
+    
     return Agent(
-        model=BedrockModel(model_id="us.anthropic.claude-sonnet-4-20250514-v1:0"),
-        tools=client.list_tools_sync()
+        model=BedrockModel(
+            model_id="us.anthropic.claude-sonnet-4-20250514-v1:0",
+            timeout=60  # タイムアウトを60秒に延長
+        ),
+        tools=all_tools
     )
 
 
@@ -95,14 +132,38 @@ async def stream_response(agent, question, container):
 
 # ボタンを押したら生成開始
 if st.button("質問する"):
-    client = create_mcp_client(mcp_args)
+    # 有効なMCPサーバーのみフィルタリング
+    valid_servers = [s for s in st.session_state.mcp_servers if s.strip()]
     
-    with st.spinner("回答を生成中…"):
-        with client:
-            agent = create_agent(client)
-            container = st.container()
-            
-            # 非同期実行
-            loop = asyncio.new_event_loop()
-            loop.run_until_complete(stream_response(agent, question, container))
-            loop.close()
+    if not valid_servers:
+        st.error("少なくとも1つのMCPサーバーを設定してください。")
+    else:
+        # 複数のMCPクライアントを作成
+        clients = [create_mcp_client(server) for server in valid_servers]
+        
+        with st.spinner("回答を生成中…"):
+            try:
+                # すべてのクライアントをコンテキストマネージャで管理
+                for client in clients:
+                    client.__enter__()
+                
+                agent = create_agent(clients)
+                container = st.container()
+                
+                # 非同期実行
+                loop = asyncio.new_event_loop()
+                loop.run_until_complete(stream_response(agent, question, container))
+                loop.close()
+                
+            except asyncio.TimeoutError:
+                st.error("タイムアウトエラーが発生しました。もう一度お試しください。")
+            except Exception as e:
+                st.error(f"エラーが発生しました: {str(e)}")
+                st.info("MCPサーバーの数を減らすか、質問を簡潔にしてお試しください。")
+            finally:
+                # すべてのクライアントを終了
+                for client in clients:
+                    try:
+                        client.__exit__(None, None, None)
+                    except:
+                        pass
