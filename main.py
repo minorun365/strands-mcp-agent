@@ -26,10 +26,10 @@ question = st.text_input("質問を入力", "Bedrockでマルチエージェン�
 
 # サイドバー
 with st.sidebar:
-    mcp_args = st.text_input("MCPサーバーのパッケージ名（uvx用）", "awslabs.aws-documentation-mcp-server@latest")
-    model_id = st.text_input("BedrockのモデルID", "us.anthropic.claude-sonnet-4-20250514-v1:0")
+    st.title("MCPサーバー設定")
+    mcp_args = st.text_input("uvx用のパッケージ名", "awslabs.aws-documentation-mcp-server@latest")
     st.text("")
-    st.markdown("このアプリの作り方 [https://qiita.com/minorun365/items/dd05a3e4938482ac6055](https://qiita.com/minorun365/items/dd05a3e4938482ac6055)")
+    st.markdown("このアプリの作り方（Qiita） [https://qiita.com/minorun365/items/dd05a3e4938482ac6055](https://qiita.com/minorun365/items/dd05a3e4938482ac6055)")
 
 
 def create_mcp_client(mcp_args):
@@ -39,10 +39,10 @@ def create_mcp_client(mcp_args):
     ))
 
 
-def create_agent(client, model_id):
+def create_agent(client):
     """エージェントを作成"""
     return Agent(
-        model=BedrockModel(model_id=model_id),
+        model=BedrockModel(model_id="us.anthropic.claude-sonnet-4-20250514-v1:0"),
         tools=client.list_tools_sync()
     )
 
@@ -86,7 +86,7 @@ async def stream_response(agent, question, container):
             # テキストを抽出して表示
             if text := extract_text(chunk):
                 buffer += text
-                text_holder.markdown(buffer + "▌")
+                text_holder.markdown(buffer)
     
     # 最終表示
     if buffer:
@@ -99,7 +99,7 @@ if st.button("質問する"):
     
     with st.spinner("回答を生成中…"):
         with client:
-            agent = create_agent(client, model_id)
+            agent = create_agent(client)
             container = st.container()
             
             # 非同期実行
