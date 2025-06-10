@@ -58,7 +58,7 @@ with st.sidebar:
     
     st.text("")
     st.text("")
-    st.markdown("このアプリの作り方（Qiita） [https://qiita.com/minorun365/items/dd05a3e4938482ac6055](https://qiita.com/minorun365/items/dd05a3e4938482ac6055)")
+    st.markdown("このアプリの作り方（Qiita） [https://qiita.com/minorun365/items/428ca505a8dd40136b5d](https://qiita.com/minorun365/items/428ca505a8dd40136b5d)")
 
 
 def create_mcp_client(mcp_args):
