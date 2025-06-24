@@ -10,6 +10,7 @@ from mcp import stdio_client, StdioServerParameters
 st.set_page_config(
     page_title="Strands MCPエージェント",
     page_icon="⛓️",
+    initial_sidebar_state="expanded",
     menu_items={'About': "Strands Agents SDKで作ったMCPホストアプリです。"}
 )
 
@@ -22,13 +23,12 @@ if "aws" in st.secrets:
 # メインエリア
 st.title("Strands MCPエージェント")
 st.markdown("👈 サイドバーで好きなMCPサーバーを設定して、[Strands Agents SDK](https://aws.amazon.com/jp/blogs/news/introducing-strands-agents-an-open-source-ai-agents-sdk/) を動かしてみよう！")
-question = st.text_area("質問を入力", "このブログのAWS技術レベルを判定して。専門用語はドキュメントで検索してね　https://developers.kddi.com/blog/xSJ3RiApHHEY1WfsJTuTx", height=80)
+question = st.text_area("質問を入力", "このブログにアクセスして、出てくるAWS用語をドキュメントで調べて解説して。 https://qiita.com/minorun365/items/428ca505a8dd40136b5d", height=80)
 
 # セッション状態の初期化
 if "mcp_servers" not in st.session_state:
     st.session_state.mcp_servers = [
         "mcp-server-fetch",
-        "mcp-aws-level-checker",
         "awslabs.aws-documentation-mcp-server"
     ]
 
