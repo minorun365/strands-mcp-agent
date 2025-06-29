@@ -4,7 +4,7 @@ import streamlit as st
 from strands import Agent
 from strands.models import BedrockModel
 from strands.tools.mcp import MCPClient
-from mcp import stdio_client, StdioServerParameters
+from mcp import http_client
 
 # ページ設定
 st.set_page_config(
@@ -30,11 +30,9 @@ MICROSOFT_LEARNING_MCP_URL = "https://learn.microsoft.com/api/mcp"
 
 
 
-def create_mcp_client(mcp_args):
-    """MCPクライアントを作成"""
-    return MCPClient(lambda: stdio_client(
-        StdioServerParameters(command="uvx", args=[mcp_args])
-    ))
+def create_mcp_client(mcp_url):
+    """MCPクライアントを作成（HTTP形式）"""
+    return MCPClient(lambda: http_client(mcp_url))
 
 
 def create_agent(clients):
