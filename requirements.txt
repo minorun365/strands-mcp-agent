@@ -1,5 +1,0 @@
-uv
-openai
-streamlit
-strands-agents
-strands-agents-builder
