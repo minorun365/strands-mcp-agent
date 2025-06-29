@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-このリポジトリは「Strands MCP エージェント」というWebアプリケーションで、AWS発のOSS「Strands Agents SDK」を使用して構築されています。任意のMCPサーバーを設定し、AWS BedrockのClaudeモデルと対話できるStreamlitベースのインターフェースを提供します。
+このリポジトリは「Strands MCP エージェント」というWebアプリケーションで、AWS発のOSS「Strands Agents SDK」を使用して構築されています。Microsoft Learning MCPサーバーを使用し、OpenAIのGPT-4.1モデルと対話できるStreamlitベースのインターフェースを提供します。
 
 ## 一般的なコマンド
 
@@ -23,15 +23,10 @@ streamlit run main.py --logger.level=debug
 pip install -r requirements.txt
 ```
 
-### AWS認証設定
+### OpenAI API設定
 ```bash
-# AWS CLIで認証情報を設定
-aws configure
-
-# または環境変数で設定
-export AWS_ACCESS_KEY_ID="your-access-key-id"
-export AWS_SECRET_ACCESS_KEY="your-secret-access-key"
-export AWS_DEFAULT_REGION="us-west-2"
+# 環境変数でOpenAI API キーを設定
+export OPENAI_API_KEY="your-openai-api-key"
 ```
 
 ## コードアーキテクチャと構造
@@ -46,11 +41,11 @@ export AWS_DEFAULT_REGION="us-west-2"
 #### 1. Streamlitアプリケーション (`main.py`)
 - **UI構成**:
   - メインエリア: 質問入力フィールドと回答表示
-  - サイドバー: BedrockモデルIDとMCPサーバーの設定
+  - Microsoft Learning MCP固定設定
   
 - **主要な関数**:
-  - `create_mcp_client()`: MCPクライアントの作成（uvx/npx対応）
-  - `create_agent_with_multiple_tools()`: 複数ツールを持つエージェントの作成
+  - `create_mcp_client()`: MCPクライアントの作成（HTTP形式）
+  - `create_agent()`: MCPツールを持つエージェントの作成
   - `stream_response()`: 非同期でレスポンスをストリーミング表示
   - `extract_tool_info()`: ツール実行情報の抽出
   - `extract_text()`: チャンクからテキストの抽出
@@ -58,26 +53,26 @@ export AWS_DEFAULT_REGION="us-west-2"
 #### 2. 技術スタック
 - **フレームワーク**: Streamlit（Webインターフェース）
 - **AIエージェント**: Strands Agents SDK
-- **LLMプロバイダー**: AWS Bedrock（Claudeモデル）
-- **MCPプロトコル**: stdio_client経由でMCPサーバーと通信
-- **パッケージマネージャー**: uvxまたはnpx（MCPサーバー実行用）
+- **LLMプロバイダー**: OpenAI（GPT-4.1モデル）
+- **MCPプロトコル**: http_client経由でMCPサーバーと通信
+- **MCPサーバー**: Microsoft Learning MCP（固定設定）
 
 #### 3. セッション管理
-- `st.session_state`を使用してMCPサーバー設定を永続化
-- 動的にMCPサーバーの追加・削除が可能
+- Microsoft Learning MCPサーバーに固定接続
+- シンプルな質問・回答インターフェース
 
 #### 4. 認証とシークレット管理
-- ローカル開発: AWS環境変数または~/.aws/credentials
+- ローカル開発: OPENAI_API_KEY環境変数
 - Streamlit Community Cloud: st.secretsを使用
-  - AWS認証情報
+  - OpenAI API認証情報
   - Langfuseトレース設定（オプション）
 
 ## 重要な注意点
 
-1. **MCPサーバー接続**: stdioプロトコルをサポートする任意のMCPサーバーに接続可能
+1. **MCPサーバー接続**: Microsoft Learning MCPサーバーにHTTPプロトコルで接続
 2. **非同期処理**: asyncioを使用してストリーミングレスポンスを実装
-3. **エラーハンドリング**: MCPサーバー接続エラーやBedrock認証エラーに注意
-4. **デプロイ**: Streamlit Community Cloudへのデプロイ時はシークレット設定が必須
+3. **エラーハンドリング**: MCPサーバー接続エラーやOpenAI API認証エラーに注意
+4. **デプロイ**: Streamlit Community Cloudへのデプロイ時はOpenAI API キーの設定が必須
 
 ## GitHub Actions
 
@@ -87,6 +82,6 @@ Claude Code Actionが設定されており、以下のトリガーで動作:
 
 ## 開発のヒント
 
-1. MCPサーバーの追加時は、パッケージマネージャー（uvx/npx）に応じた適切なパッケージ名を指定
-2. Bedrockモデルは利用可能なモデルIDを確認してから使用
+1. Microsoft Learning MCPサーバーは固定設定のため、変更不要
+2. OpenAI GPT-4.1モデルを使用（temperature=0.5に設定）
 3. ツール実行の可視化により、エージェントの動作を把握しやすい設計
