@@ -1,18 +1,18 @@
 # Strands MCP エージェント
 
-あなたの好きなMCPサーバーを設定できる！ AWS発のOSS「[Strands Agents SDK](http://strandsagents.com)」で作ったAIエージェントWebアプリです。
+Microsoft Learning MCPと連携してAzureやMicrosoft技術について学習できる！ AWS発のOSS「[Strands Agents SDK](http://strandsagents.com)」で作ったAIエージェントWebアプリです。
 
 - このアプリの作り方： https://qiita.com/minorun365/items/428ca505a8dd40136b5d
 
 
 ## 概要
 
-このアプリケーションは、AWS BedrockのClaudeモデルを使用して、様々なMCPサーバーとWebインターフェース経由で対話できるようにします。stdioプロトコルをサポートする任意のMCPサーバーに接続し、専門的なツールやデータソースにアクセスできます。
+このアプリケーションは、AWS BedrockのClaudeモデルを使用して、Microsoft Learning MCPとWebインターフェース経由で対話できるようにします。HTTPプロトコル経由でMicrosoft Learning MCPに接続し、Microsoft AzureやMicrosoft技術に関する専門的な情報にアクセスできます。
 
 ## 機能
 
 - 🤖 **Strandsエージェント統合**: AIエージェント構築のためのStrandsフレームワークを活用
-- 🔌 **MCPサーバーサポート**: stdioプロトコル経由で任意のMCPサーバーに接続
+- 🔌 **Microsoft Learning MCP統合**: HTTPプロトコル経由でMicrosoft Learning MCPに接続
 - 🌐 **Streamlit Webインターフェース**: エージェントと対話するための使いやすいWebインターフェース
 - ⚡ **リアルタイムストリーミング**: ツール実行の可視化とともにエージェントの応答をライブストリーミング
 - 🛠️ **AWS Bedrock統合**: AWS BedrockのClaudeモデルを活用してインテリジェントな応答を生成
@@ -23,7 +23,7 @@
 - Python 3.10以上
 - Bedrockアクセス権限を持つAWSアカウント
 - 設定済みのAWS認証情報
-- 使用したいMCPサーバーへのアクセス
+- Microsoft Learning MCP APIへのアクセス
 
 ## インストール
 
@@ -87,27 +87,24 @@ streamlit run main.py
 ### アプリケーションの使用
 
 1. **モデルID**: BedrockモデルIDを入力（デフォルト: `us.anthropic.claude-3-7-sonnet-20250219-v1:0`）
-2. **パッケージマネージャー**: uvxまたはnpxを選択
-3. **MCPサーバー**: 選択したパッケージマネージャー用のMCPサーバーパッケージ名を指定（例: `awslabs.aws-documentation-mcp-server@latest`）
-4. **質問**: クエリを入力
-5. 「質問する」をクリックして送信
+2. **質問**: Microsoft AzureやMicrosoft技術に関するクエリを入力
+3. 「質問する」をクリックして送信
 
 エージェントは以下を実行します:
-- 指定されたMCPサーバーに接続
+- Microsoft Learning MCPに接続
 - 選択したBedrockモデルを使用してクエリを処理
+- Microsoft技術に関する専門的な情報を取得
 - リアルタイムで応答をストリーミング
 - ツールの実行を発生時に表示
 
-## サポートされているMCPサーバー
+## Microsoft Learning MCP統合
 
-このアプリケーションは、stdioプロトコルをサポートする任意のMCPサーバーに接続できます。
+このアプリケーションは、Microsoft Learning MCPに固定で接続し、以下の機能を提供します：
 
-### uvxパッケージの例:
-- `awslabs.aws-documentation-mcp-server@latest` - AWSドキュメント検索
-
-### npxパッケージの例:
-- `@modelcontextprotocol/server-filesystem` - ファイルシステムアクセス
-- `@modelcontextprotocol/server-github` - GitHub統合
+- **Azure サービス**: Azure の各種サービスに関する詳細情報
+- **Microsoft 技術**: .NET、Azure、Microsoft 365 などの技術情報
+- **学習リソース**: Microsoft Learn の公式ドキュメントへのアクセス
+- **ベストプラクティス**: Microsoft技術の推奨される使用方法
 
 ## Streamlit Community Cloudへのデプロイ
 
@@ -152,7 +149,7 @@ streamlit run main.py
 
 1. **AWS認証情報エラー**: AWS認証情報が正しく設定されているか確認
 2. **Bedrockアクセス拒否**: AWSアカウントが指定されたBedrockモデルにアクセスできるか確認
-3. **MCPサーバー接続失敗**: MCPサーバーパッケージ名が正しく、アクセス可能か確認
+3. **Microsoft Learning MCP接続失敗**: インターネット接続とMicrosoft Learning MCP APIへのアクセスを確認
 
 ### デバッグモード
 
