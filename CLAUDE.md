@@ -74,9 +74,14 @@ export LANGSMITH_API_KEY="your-langsmith-api-key"
 - ローカル開発: 環境変数
   - OPENAI_API_KEY: OpenAI API認証
   - LANGSMITH_API_KEY: LangSmithトレース（オプション）
-- Streamlit Community Cloud: st.secretsを使用
-  - openai.OPENAI_API_KEY: OpenAI API認証情報
-  - langsmith.LANGSMITH_API_KEY: LangSmithトレース設定（オプション）
+- Streamlit Community Cloud: `.streamlit/secrets.toml`を使用
+  ```toml
+  [openai]
+  OPENAI_API_KEY = "your-openai-api-key"
+  
+  [langsmith]
+  LANGSMITH_API_KEY = "your-langsmith-api-key"
+  ```
 
 ## 重要な注意点
 
