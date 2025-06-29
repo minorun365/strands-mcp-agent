@@ -19,6 +19,25 @@ st.set_page_config(
 if "openai" in st.secrets:
     os.environ["OPENAI_API_KEY"] = st.secrets["openai"]["OPENAI_API_KEY"]
 
+# LangSmithトレース設定
+if "langsmith" in st.secrets:
+    os.environ["LANGSMITH_API_KEY"] = st.secrets["langsmith"]["LANGSMITH_API_KEY"]
+    
+def setup_langsmith_tracing(api_key, project_name, enabled=True):
+    """LangSmithトレース機能を設定"""
+    if enabled and api_key and project_name:
+        os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"] = "https://api.smith.langchain.com/otel"
+        os.environ["OTEL_EXPORTER_OTLP_HEADERS"] = f"x-api-key={api_key},Langsmith-Project={project_name}"
+        os.environ["OTEL_SERVICE_NAME"] = "strands-mcp-agent"
+        os.environ["STRANDS_OTEL_SAMPLER_RATIO"] = "0.2"
+        return True
+    else:
+        # トレースを無効化
+        for env_var in ["OTEL_EXPORTER_OTLP_ENDPOINT", "OTEL_EXPORTER_OTLP_HEADERS", "OTEL_SERVICE_NAME", "STRANDS_OTEL_SAMPLER_RATIO"]:
+            if env_var in os.environ:
+                del os.environ[env_var]
+        return False
+
 # Microsoft Learning MCP設定（固定）
 MICROSOFT_LEARNING_MCP_URL = "https://learn.microsoft.com/api/mcp"
 
@@ -100,12 +119,52 @@ async def stream_response(agent, question):
     return full_response
 
 
+# --- Sidebar: LangSmithトレース設定 ---
+with st.sidebar:
+    st.header("⚙️ 設定")
+    
+    st.subheader("🔍 LangSmithトレース")
+    langsmith_enabled = st.checkbox("LangSmithトレースを有効化", value=False)
+    
+    langsmith_api_key = ""
+    langsmith_project = ""
+    
+    if langsmith_enabled:
+        # シークレットからデフォルト値を取得
+        default_api_key = os.environ.get("LANGSMITH_API_KEY", "")
+        langsmith_api_key = st.text_input(
+            "LangSmith API Key", 
+            value=default_api_key,
+            type="password",
+            help="LangSmithのAPI キーを入力してください"
+        )
+        langsmith_project = st.text_input(
+            "Project Name", 
+            value="strands-mcp-agent",
+            help="LangSmithのプロジェクト名を入力してください"
+        )
+        
+        if langsmith_api_key and langsmith_project:
+            tracing_setup = setup_langsmith_tracing(langsmith_api_key, langsmith_project, True)
+            if tracing_setup:
+                st.success("✅ LangSmithトレースが有効になりました")
+            else:
+                st.error("❌ LangSmithトレースの設定に失敗しました")
+        else:
+            st.warning("⚠️ API KeyとProject Nameの両方を入力してください")
+    else:
+        setup_langsmith_tracing("", "", False)
+
 # --- App ---
 st.title("Microsoft Learning Agent")
 st.markdown(
     "このアプリでは、MS LearnのMCP APIを使ってAzureの資格勉強や学習サポートもできちゃうよ！\n"
     "\n💡 Azureの公式ラーニング教材を活用して、資格取得を目指そう！"
 )
+
+# LangSmithトレース状態の表示
+if langsmith_enabled and langsmith_api_key and langsmith_project:
+    st.info(f"🔍 **LangSmithトレース有効** - プロジェクト: {langsmith_project}")
 
 # チャット履歴の初期化
 if "messages" not in st.session_state:

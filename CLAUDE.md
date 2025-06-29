@@ -19,8 +19,8 @@ streamlit run main.py --logger.level=debug
 
 ### 依存関係の管理
 ```bash
-# 依存関係のインストール
-pip install -r requirements.txt
+# 依存関係のインストール（uvを使用）
+uv sync
 ```
 
 ### OpenAI API設定
@@ -29,17 +29,25 @@ pip install -r requirements.txt
 export OPENAI_API_KEY="your-openai-api-key"
 ```
 
+### LangSmithトレース設定
+```bash
+# 環境変数でLangSmith設定（オプション）
+export LANGSMITH_API_KEY="your-langsmith-api-key"
+```
+
 ## コードアーキテクチャと構造
 
 ### ファイル構成
 - `main.py` - Streamlitアプリケーションのメインファイル
-- `requirements.txt` - Python依存関係の定義
+- `pyproject.toml` - Python依存関係の定義（uv管理）
+- `uv.lock` - 依存関係のロックファイル
 - `.github/workflows/claude.yml` - Claude Code GitHub Actionの設定
 
 ### 主要なコンポーネント
 
 #### 1. Streamlitアプリケーション (`main.py`)
 - **UI構成**:
+  - サイドバー: LangSmithトレース設定
   - メインエリア: 質問入力フィールドと回答表示
   - Microsoft Learning MCP固定設定
   
@@ -49,23 +57,27 @@ export OPENAI_API_KEY="your-openai-api-key"
   - `stream_response()`: 非同期でレスポンスをストリーミング表示
   - `extract_tool_info()`: ツール実行情報の抽出
   - `extract_text()`: チャンクからテキストの抽出
+  - `setup_langsmith_tracing()`: LangSmithトレース設定
 
 #### 2. 技術スタック
 - **フレームワーク**: Streamlit（Webインターフェース）
-- **AIエージェント**: Strands Agents SDK
+- **AIエージェント**: Strands Agents SDK（OTEL対応）
 - **LLMプロバイダー**: OpenAI（GPT-4.1モデル）
 - **MCPプロトコル**: http_client経由でMCPサーバーと通信
 - **MCPサーバー**: Microsoft Learning MCP（固定設定）
+- **トレーシング**: OpenTelemetry → LangSmith
 
 #### 3. セッション管理
 - Microsoft Learning MCPサーバーに固定接続
 - シンプルな質問・回答インターフェース
 
 #### 4. 認証とシークレット管理
-- ローカル開発: OPENAI_API_KEY環境変数
+- ローカル開発: 環境変数
+  - OPENAI_API_KEY: OpenAI API認証
+  - LANGSMITH_API_KEY: LangSmithトレース（オプション）
 - Streamlit Community Cloud: st.secretsを使用
-  - OpenAI API認証情報
-  - Langfuseトレース設定（オプション）
+  - openai.OPENAI_API_KEY: OpenAI API認証情報
+  - langsmith.LANGSMITH_API_KEY: LangSmithトレース設定（オプション）
 
 ## 重要な注意点
 
@@ -73,6 +85,7 @@ export OPENAI_API_KEY="your-openai-api-key"
 2. **非同期処理**: asyncioを使用してストリーミングレスポンスを実装
 3. **エラーハンドリング**: MCPサーバー接続エラーやOpenAI API認証エラーに注意
 4. **デプロイ**: Streamlit Community Cloudへのデプロイ時はOpenAI API キーの設定が必須
+5. **LangSmithトレース**: OTELエンドポイント経由でトレース情報を送信（オプション機能）
 
 ## GitHub Actions
 
@@ -85,3 +98,5 @@ Claude Code Actionが設定されており、以下のトリガーで動作:
 1. Microsoft Learning MCPサーバーは固定設定のため、変更不要
 2. OpenAI GPT-4.1モデルを使用（temperature=0.5に設定）
 3. ツール実行の可視化により、エージェントの動作を把握しやすい設計
+4. LangSmithトレースはサイドバーから有効化できるオプション機能
+5. OTEL形式でトレースデータがLangSmithに自動送信される
