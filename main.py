@@ -2,7 +2,7 @@ import asyncio
 import os
 import streamlit as st
 from strands import Agent
-from strands.models import BedrockModel
+from strands.models import OpenAIModel
 from strands.tools.mcp import MCPClient
 from mcp import http_client
 
@@ -15,10 +15,8 @@ st.set_page_config(
 )
 
 # 環境変数の設定
-if "aws" in st.secrets:
-    os.environ["AWS_ACCESS_KEY_ID"] = st.secrets["aws"]["AWS_ACCESS_KEY_ID"]
-    os.environ["AWS_SECRET_ACCESS_KEY"] = st.secrets["aws"]["AWS_SECRET_ACCESS_KEY"]
-    os.environ["AWS_DEFAULT_REGION"] = st.secrets["aws"]["AWS_DEFAULT_REGION"]
+if "openai" in st.secrets:
+    os.environ["OPENAI_API_KEY"] = st.secrets["openai"]["OPENAI_API_KEY"]
 
 # メインエリア
 st.title("Strands MCPエージェント")
@@ -43,9 +41,10 @@ def create_agent(clients):
         all_tools.extend(tools)
     
     return Agent(
-        model=BedrockModel(
-            model_id="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-            timeout=60  # タイムアウトを60秒に延長
+        model=OpenAIModel(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            model_name="gpt-4.1",
+            temperature=0.5
         ),
         tools=all_tools
     )

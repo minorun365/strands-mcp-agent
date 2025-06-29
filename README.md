@@ -15,14 +15,13 @@ Microsoft Learning MCPと連携してAzureやMicrosoft技術について学習�
 - 🔌 **Microsoft Learning MCP統合**: HTTPプロトコル経由でMicrosoft Learning MCPに接続
 - 🌐 **Streamlit Webインターフェース**: エージェントと対話するための使いやすいWebインターフェース
 - ⚡ **リアルタイムストリーミング**: ツール実行の可視化とともにエージェントの応答をライブストリーミング
-- 🛠️ **AWS Bedrock統合**: AWS BedrockのClaudeモデルを活用してインテリジェントな応答を生成
+- 🛠️ **OpenAI統合**: OpenAIのGPT-4.1モデルを活用してインテリジェントな応答を生成
 - 📊 **Langfuseトレース**: Langfuseによる詳細なトレースと観測機能
 
 ## 前提条件
 
 - Python 3.10以上
-- Bedrockアクセス権限を持つAWSアカウント
-- 設定済みのAWS認証情報
+- OpenAI APIキー
 - Microsoft Learning MCP APIへのアクセス
 
 ## インストール
@@ -40,20 +39,13 @@ pip install -r requirements.txt
 
 ## 設定
 
-### AWS認証情報
+### OpenAI API認証情報
 
-ローカル開発の場合、以下のいずれかの方法でAWS認証情報を設定します:
+ローカル開発の場合、以下の方法でOpenAI APIキーを設定します:
 
-1. AWS CLI設定:
+環境変数:
 ```bash
-aws configure
-```
-
-2. 環境変数:
-```bash
-export AWS_ACCESS_KEY_ID="your-access-key-id"
-export AWS_SECRET_ACCESS_KEY="your-secret-access-key"
-export AWS_DEFAULT_REGION="us-west-2"
+export OPENAI_API_KEY="your-openai-api-key"
 ```
 
 ### Streamlit Community Cloudへのデプロイ
@@ -64,10 +56,8 @@ Streamlit Community Cloudにデプロイする場合:
 2. 「Secrets」セクションに移動
 3. 以下のシークレットを追加:
 ```toml
-[aws]
-AWS_ACCESS_KEY_ID = "your-access-key-id"
-AWS_SECRET_ACCESS_KEY = "your-secret-access-key"
-AWS_DEFAULT_REGION = "us-west-2"
+[openai]
+OPENAI_API_KEY = "your-openai-api-key"
 
 [langfuse]
 LANGFUSE_PUBLIC_KEY = "your-langfuse-public-key"
@@ -86,13 +76,12 @@ streamlit run main.py
 
 ### アプリケーションの使用
 
-1. **モデルID**: BedrockモデルIDを入力（デフォルト: `us.anthropic.claude-3-7-sonnet-20250219-v1:0`）
-2. **質問**: Microsoft AzureやMicrosoft技術に関するクエリを入力
-3. 「質問する」をクリックして送信
+1. **質問**: Microsoft AzureやMicrosoft技術に関するクエリを入力
+2. 「質問する」をクリックして送信
 
 エージェントは以下を実行します:
 - Microsoft Learning MCPに接続
-- 選択したBedrockモデルを使用してクエリを処理
+- OpenAI GPT-4.1モデルを使用してクエリを処理
 - Microsoft技術に関する専門的な情報を取得
 - リアルタイムで応答をストリーミング
 - ツールの実行を発生時に表示
@@ -116,7 +105,7 @@ streamlit run main.py
    - リポジトリ: `yourusername/strands-mcp-agent`
    - ブランチ: `main`
    - メインファイルパス: `main.py`
-6. アプリ設定でAWSシークレットを追加（設定セクションを参照）
+6. アプリ設定でOpenAIシークレットを追加（設定セクションを参照）
 7. 「Deploy」をクリック
 
 ## 観測性とトレース
@@ -137,9 +126,9 @@ streamlit run main.py
 
 ## セキュリティに関する考慮事項
 
-- AWS認証情報をリポジトリにコミットしない
+- OpenAI APIキーをリポジトリにコミットしない
 - 機密情報にはStreamlitシークレットを使用
-- AWS IAMユーザーにはBedrockに必要な権限のみを付与
+- OpenAI APIキーの使用量とコストを監視
 - デプロイ前にMCPサーバーの権限を確認
 - Langfuseの認証情報も同様に保護
 
@@ -147,8 +136,8 @@ streamlit run main.py
 
 ### よくある問題
 
-1. **AWS認証情報エラー**: AWS認証情報が正しく設定されているか確認
-2. **Bedrockアクセス拒否**: AWSアカウントが指定されたBedrockモデルにアクセスできるか確認
+1. **OpenAI APIキーエラー**: OpenAI APIキーが正しく設定されているか確認
+2. **OpenAI API制限**: API使用量やレート制限に達していないか確認
 3. **Microsoft Learning MCP接続失敗**: インターネット接続とMicrosoft Learning MCP APIへのアクセスを確認
 
 ### デバッグモード
@@ -170,5 +159,5 @@ streamlit run main.py --logger.level=debug
 
 - [Strands](https://github.com/yourusername/strands) - エージェントフレームワーク
 - [MCP](https://modelcontextprotocol.io) - Model Context Protocol
-- [AWS Bedrock](https://aws.amazon.com/bedrock/) - マネージドAIサービス
+- [OpenAI](https://openai.com) - GPT-4.1 APIサービス
 - [Streamlit](https://streamlit.io) - Webアプリフレームワーク
