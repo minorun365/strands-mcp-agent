@@ -19,15 +19,6 @@ st.set_page_config(
 if "openai" in st.secrets:
     os.environ["OPENAI_API_KEY"] = st.secrets["openai"]["OPENAI_API_KEY"]
 
-# メインエリア
-title = "Microsoft Learning Agent"
-st.title(title)
-st.markdown(
-    "このアプリでは、MS LearnのMCP APIを使ってAzureの資格勉強や学習サポートもできちゃうよ！\n"
-    "\n💡 Azureの公式ラーニング教材を活用して、資格取得を目指そう！"
-)
-question = st.text_area("質問を入力", "Microsoft Azureとは何ですか？主要なサービスについて教えてください。", height=80)
-
 # Microsoft Learning MCP設定（固定）
 MICROSOFT_LEARNING_MCP_URL = "https://learn.microsoft.com/api/mcp"
 
@@ -48,7 +39,6 @@ def create_agent(clients):
         tools = client.list_tools_sync()
         all_tools.extend(tools)
 
-    # OpenAIModelの初期化方法を最新版に修正
     model = OpenAIModel(
         client_args={
             "api_key": os.getenv("OPENAI_API_KEY"),
@@ -80,63 +70,84 @@ def extract_text(chunk):
     return ""
 
 
-async def stream_response(agent, question, container):
-    """レスポンスをストリーミング表示"""
-    text_holder = container.empty()
+async def stream_response(agent, question):
+    """レスポンスをストリーミング表示し、完全なレスポンスを返す"""
+    text_holder = st.empty()
     buffer = ""
+    full_response = ""
     shown_tools = set()
 
     async for chunk in agent.stream_async(question):
         if isinstance(chunk, dict):
-            # ツール実行を検出して表示
             tool_id, tool_name = extract_tool_info(chunk)
             if tool_id and tool_name and tool_id not in shown_tools:
                 shown_tools.add(tool_id)
                 if buffer:
                     text_holder.markdown(buffer)
+                    full_response += buffer
                     buffer = ""
-                container.info(f"🔧 **{tool_name}** ツールを実行中...")
-                text_holder = container.empty()
+                st.info(f"🔧 **{tool_name}** ツールを実行中...")
+                text_holder = st.empty()
 
-            # テキストを抽出して表示
             if text := extract_text(chunk):
                 buffer += text
                 text_holder.markdown(buffer)
 
-    # 最終表示
     if buffer:
+        full_response += buffer
         text_holder.markdown(buffer)
 
+    return full_response
 
-# ボタンを押したら生成開始
-if st.button("質問する"):
-    # Microsoft Learning MCPクライアントを作成
-    client = create_mcp_client(MICROSOFT_LEARNING_MCP_URL)
-    clients = [client]
 
-    with st.spinner("回答を生成中…"):
-        try:
-            # すべてのクライアントをコンテキストマネージャで管理
-            for client in clients:
-                client.__enter__()
+# --- App ---
+st.title("Microsoft Learning Agent")
+st.markdown(
+    "このアプリでは、MS LearnのMCP APIを使ってAzureの資格勉強や学習サポートもできちゃうよ！\n"
+    "\n💡 Azureの公式ラーニング教材を活用して、資格取得を目指そう！"
+)
 
-            agent = create_agent(clients)
-            container = st.container()
+# チャット履歴の初期化
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-            # 非同期実行
-            loop = asyncio.new_event_loop()
-            loop.run_until_complete(stream_response(agent, question, container))
-            loop.close()
+# 履歴からチャットメッセージを表示
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-        except asyncio.TimeoutError:
-            st.error("タイムアウトエラーが発生しました。もう一度お試しください。")
-        except Exception as e:
-            st.error(f"エラーが発生しました: {str(e)}")
-            st.info("Microsoft Learning MCPサーバーへの接続を確認してください。")
-        finally:
-            # すべてのクライアントを終了
-            for client in clients:
-                try:
-                    client.__exit__(None, None, None)
-                except Exception:
-                    pass
+# ユーザーの入力を受け付ける
+if prompt := st.chat_input("質問を入力してください"):
+    # ユーザーメッセージを履歴に追加して表示
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # アシスタントの応答
+    with st.chat_message("assistant"):
+        with st.spinner("回答を生成中…"):
+            client = create_mcp_client(MICROSOFT_LEARNING_MCP_URL)
+            clients = [client]
+            try:
+                for client in clients:
+                    client.__enter__()
+
+                agent = create_agent(clients)
+
+                # 非同期でレスポンスをストリーミング
+                response = asyncio.run(stream_response(agent, prompt))
+
+                # アシスタントの完全な応答を履歴に追加
+                st.session_state.messages.append({"role": "assistant", "content": response})
+
+            except asyncio.TimeoutError:
+                st.error("タイムアウトエラーが発生しました。もう一度お試しください。")
+            except Exception as e:
+                st.error(f"エラーが発生しました: {str(e)}")
+                st.info("Microsoft Learning MCPサーバーへの接続を確認してください。")
+            finally:
+                for client in clients:
+                    try:
+                        client.__exit__(None, None, None)
+                    except Exception:
+                        pass
