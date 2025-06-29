@@ -22,43 +22,12 @@ if "aws" in st.secrets:
 
 # メインエリア
 st.title("Strands MCPエージェント")
-st.markdown("👈 サイドバーで好きなMCPサーバーを設定して、[Strands Agents SDK](https://aws.amazon.com/jp/blogs/news/introducing-strands-agents-an-open-source-ai-agents-sdk/) を動かしてみよう！")
+st.markdown("Microsoft Learning MCPを使用して、[Strands Agents SDK](https://aws.amazon.com/jp/blogs/news/introducing-strands-agents-an-open-source-ai-agents-sdk/) を動かしてみよう！")
 question = st.text_area("質問を入力", "このブログにアクセスして、出てくるAWS用語をドキュメントで調べて解説して。 https://qiita.com/minorun365/items/baa5038b5bfa4e35f6ad", height=80)
 
-# セッション状態の初期化
-if "mcp_servers" not in st.session_state:
-    st.session_state.mcp_servers = [
-        "mcp-server-fetch",
-        "awslabs.aws-documentation-mcp-server"
-    ]
+# Microsoft Learning MCP設定（固定）
+MICROSOFT_LEARNING_MCP_URL = "https://learn.microsoft.com/api/mcp"
 
-# サイドバー
-with st.sidebar:
-    st.title("MCPサーバー設定")
-    
-    # MCPサーバーのリスト表示と編集
-    for i, server in enumerate(st.session_state.mcp_servers):
-        col1, col2 = st.columns([5, 1])
-        with col1:
-            st.session_state.mcp_servers[i] = st.text_input(
-                f"uvxパッケージ名{i+1}", 
-                value=server, 
-                key=f"mcp_server_{i}"
-            )
-        with col2:
-            st.write("")  # 空白行で位置調整
-            if st.button("🗑️", key=f"delete_{i}", help="削除"):
-                st.session_state.mcp_servers.pop(i)
-                st.rerun()
-    
-    # サーバー追加ボタン
-    if st.button("➕ MCPサーバーを追加"):
-        st.session_state.mcp_servers.append("")
-        st.rerun()
-    
-    st.text("")
-    st.text("")
-    st.markdown("このアプリの作り方（Qiita） [https://qiita.com/minorun365/items/428ca505a8dd40136b5d](https://qiita.com/minorun365/items/428ca505a8dd40136b5d)")
 
 
 def create_mcp_client(mcp_args):
@@ -132,38 +101,33 @@ async def stream_response(agent, question, container):
 
 # ボタンを押したら生成開始
 if st.button("質問する"):
-    # 有効なMCPサーバーのみフィルタリング
-    valid_servers = [s for s in st.session_state.mcp_servers if s.strip()]
+    # Microsoft Learning MCPクライアントを作成
+    client = create_mcp_client(MICROSOFT_LEARNING_MCP_URL)
+    clients = [client]
     
-    if not valid_servers:
-        st.error("少なくとも1つのMCPサーバーを設定してください。")
-    else:
-        # 複数のMCPクライアントを作成
-        clients = [create_mcp_client(server) for server in valid_servers]
-        
-        with st.spinner("回答を生成中…"):
-            try:
-                # すべてのクライアントをコンテキストマネージャで管理
-                for client in clients:
-                    client.__enter__()
-                
-                agent = create_agent(clients)
-                container = st.container()
-                
-                # 非同期実行
-                loop = asyncio.new_event_loop()
-                loop.run_until_complete(stream_response(agent, question, container))
-                loop.close()
-                
-            except asyncio.TimeoutError:
-                st.error("タイムアウトエラーが発生しました。もう一度お試しください。")
-            except Exception as e:
-                st.error(f"エラーが発生しました: {str(e)}")
-                st.info("MCPサーバーの数を減らすか、質問を簡潔にしてお試しください。")
-            finally:
-                # すべてのクライアントを終了
-                for client in clients:
-                    try:
-                        client.__exit__(None, None, None)
-                    except:
-                        pass
+    with st.spinner("回答を生成中…"):
+        try:
+            # すべてのクライアントをコンテキストマネージャで管理
+            for client in clients:
+                client.__enter__()
+            
+            agent = create_agent(clients)
+            container = st.container()
+            
+            # 非同期実行
+            loop = asyncio.new_event_loop()
+            loop.run_until_complete(stream_response(agent, question, container))
+            loop.close()
+            
+        except asyncio.TimeoutError:
+            st.error("タイムアウトエラーが発生しました。もう一度お試しください。")
+        except Exception as e:
+            st.error(f"エラーが発生しました: {str(e)}")
+            st.info("Microsoft Learning MCPサーバーへの接続を確認してください。")
+        finally:
+            # すべてのクライアントを終了
+            for client in clients:
+                try:
+                    client.__exit__(None, None, None)
+                except:
+                    pass
