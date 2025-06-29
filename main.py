@@ -21,11 +21,6 @@ if "openai" in st.secrets:
 
 # Microsoft Learning MCP設定（固定）
 MICROSOFT_LEARNING_MCP_URL = "https://learn.microsoft.com/api/mcp"
-SYSTEM_PROMPT = """
-あなたは、Microsoft Azureに関する学習をサポートする親切なAIアシスタントです。
-Microsoft Learning MCP APIを利用して、Azureの資格や学習教材に関する質問に答えることができます。
-回答は、学習者にとって明確で、簡潔で、励みになるように心がけてください。
-"""
 
 
 def create_mcp_client(mcp_url):
@@ -75,14 +70,14 @@ def extract_text(chunk):
     return ""
 
 
-async def stream_response(agent, messages):
+async def stream_response(agent, question):
     """レスポンスをストリーミング表示し、完全なレスポンスを返す"""
     text_holder = st.empty()
     buffer = ""
     full_response = ""
     shown_tools = set()
 
-    async for chunk in agent.stream_async(messages):
+    async for chunk in agent.stream_async(question):
         if isinstance(chunk, dict):
             tool_id, tool_name = extract_tool_info(chunk)
             if tool_id and tool_name and tool_id not in shown_tools:
@@ -139,11 +134,8 @@ if prompt := st.chat_input("質問を入力してください"):
 
                 agent = create_agent(clients)
 
-                # システムプロンプトとチャット履歴を結合
-                messages = [{"role": "system", "content": SYSTEM_PROMPT}] + st.session_state.messages
-
                 # 非同期でレスポンスをストリーミング
-                response = asyncio.run(stream_response(agent, messages))
+                response = asyncio.run(stream_response(agent, prompt))
 
                 # アシスタントの完全な応答を履歴に追加
                 st.session_state.messages.append({"role": "assistant", "content": response})
@@ -159,4 +151,3 @@ if prompt := st.chat_input("質問を入力してください"):
                         client.__exit__(None, None, None)
                     except Exception:
                         pass
-
