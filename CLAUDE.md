@@ -47,7 +47,6 @@ export LANGSMITH_API_KEY="your-langsmith-api-key"
 
 #### 1. Streamlitアプリケーション (`main.py`)
 - **UI構成**:
-  - サイドバー: LangSmithトレース設定
   - メインエリア: 質問入力フィールドと回答表示
   - Microsoft Learning MCP固定設定
   
@@ -98,5 +97,5 @@ Claude Code Actionが設定されており、以下のトリガーで動作:
 1. Microsoft Learning MCPサーバーは固定設定のため、変更不要
 2. OpenAI GPT-4.1モデルを使用（temperature=0.5に設定）
 3. ツール実行の可視化により、エージェントの動作を把握しやすい設計
-4. LangSmithトレースはサイドバーから有効化できるオプション機能
+4. LangSmithトレースは環境変数/シークレットから自動設定されるオプション機能
 5. OTEL形式でトレースデータがLangSmithに自動送信される

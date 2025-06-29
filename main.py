@@ -119,41 +119,13 @@ async def stream_response(agent, question):
     return full_response
 
 
-# --- Sidebar: LangSmithトレース設定 ---
-with st.sidebar:
-    st.header("⚙️ 設定")
-    
-    st.subheader("🔍 LangSmithトレース")
-    langsmith_enabled = st.checkbox("LangSmithトレースを有効化", value=False)
-    
-    langsmith_api_key = ""
-    langsmith_project = ""
-    
-    if langsmith_enabled:
-        # シークレットからデフォルト値を取得
-        default_api_key = os.environ.get("LANGSMITH_API_KEY", "")
-        langsmith_api_key = st.text_input(
-            "LangSmith API Key", 
-            value=default_api_key,
-            type="password",
-            help="LangSmithのAPI キーを入力してください"
-        )
-        langsmith_project = st.text_input(
-            "Project Name", 
-            value="strands-mcp-agent",
-            help="LangSmithのプロジェクト名を入力してください"
-        )
-        
-        if langsmith_api_key and langsmith_project:
-            tracing_setup = setup_langsmith_tracing(langsmith_api_key, langsmith_project, True)
-            if tracing_setup:
-                st.success("✅ LangSmithトレースが有効になりました")
-            else:
-                st.error("❌ LangSmithトレースの設定に失敗しました")
-        else:
-            st.warning("⚠️ API KeyとProject Nameの両方を入力してください")
-    else:
-        setup_langsmith_tracing("", "", False)
+# LangSmithトレース設定（環境変数/シークレットから自動設定）
+if "langsmith" in st.secrets:
+    setup_langsmith_tracing(
+        st.secrets["langsmith"]["LANGSMITH_API_KEY"],
+        "strands-mcp-agent",
+        True
+    )
 
 # --- App ---
 st.title("Microsoft Learning Agent")
@@ -161,10 +133,6 @@ st.markdown(
     "このアプリでは、MS LearnのMCP APIを使ってAzureの資格勉強や学習サポートもできちゃうよ！\n"
     "\n💡 Azureの公式ラーニング教材を活用して、資格取得を目指そう！"
 )
-
-# LangSmithトレース状態の表示
-if langsmith_enabled and langsmith_api_key and langsmith_project:
-    st.info(f"🔍 **LangSmithトレース有効** - プロジェクト: {langsmith_project}")
 
 # チャット履歴の初期化
 if "messages" not in st.session_state:
