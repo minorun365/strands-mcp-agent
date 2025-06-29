@@ -22,7 +22,8 @@ if "openai" in st.secrets:
 # LangSmithトレース設定
 if "langsmith" in st.secrets:
     os.environ["LANGSMITH_API_KEY"] = st.secrets["langsmith"]["LANGSMITH_API_KEY"]
-    
+
+
 def setup_langsmith_tracing(api_key, project_name, enabled=True):
     """LangSmithトレース機能を設定"""
     if enabled and api_key and project_name:
@@ -33,10 +34,16 @@ def setup_langsmith_tracing(api_key, project_name, enabled=True):
         return True
     else:
         # トレースを無効化
-        for env_var in ["OTEL_EXPORTER_OTLP_ENDPOINT", "OTEL_EXPORTER_OTLP_HEADERS", "OTEL_SERVICE_NAME", "STRANDS_OTEL_SAMPLER_RATIO"]:
+        for env_var in [
+            "OTEL_EXPORTER_OTLP_ENDPOINT",
+            "OTEL_EXPORTER_OTLP_HEADERS",
+            "OTEL_SERVICE_NAME",
+            "STRANDS_OTEL_SAMPLER_RATIO",
+        ]:
             if env_var in os.environ:
                 del os.environ[env_var]
         return False
+
 
 # Microsoft Learning MCP設定（固定）
 MICROSOFT_LEARNING_MCP_URL = "https://learn.microsoft.com/api/mcp"
@@ -51,8 +58,8 @@ def create_mcp_client(mcp_url):
     return MCPClient(transport)
 
 
-def create_agent(clients):
-    """複数のMCPクライアントからツールを集約してエージェントを作成"""
+def create_agent(clients, messages=None):
+    """複数のMCPクライアントからツールを集約してエージェントを作成。messagesで履歴も渡せる"""
     all_tools = []
     for client in clients:
         tools = client.list_tools_sync()
@@ -68,7 +75,10 @@ def create_agent(clients):
             "temperature": 0.5,
         },
     )
-    return Agent(model=model, tools=all_tools)
+    if messages is not None:
+        return Agent(model=model, tools=all_tools, messages=messages)
+    else:
+        return Agent(model=model, tools=all_tools)
 
 
 def extract_tool_info(chunk):
@@ -89,14 +99,16 @@ def extract_text(chunk):
     return ""
 
 
-async def stream_response(agent, question):
+async def stream_response(agent, latest_user_input):
     """レスポンスをストリーミング表示し、完全なレスポンスを返す"""
     text_holder = st.empty()
     buffer = ""
     full_response = ""
     shown_tools = set()
 
-    async for chunk in agent.stream_async(question):
+    # 最新のユーザー入力をstream_asyncに渡す
+    print("Streaming response for user input:", latest_user_input)
+    async for chunk in agent.stream_async(latest_user_input):
         if isinstance(chunk, dict):
             tool_id, tool_name = extract_tool_info(chunk)
             if tool_id and tool_name and tool_id not in shown_tools:
@@ -121,11 +133,7 @@ async def stream_response(agent, question):
 
 # LangSmithトレース設定（環境変数/シークレットから自動設定）
 if "langsmith" in st.secrets:
-    setup_langsmith_tracing(
-        st.secrets["langsmith"]["LANGSMITH_API_KEY"],
-        "strands-mcp-agent",
-        True
-    )
+    setup_langsmith_tracing(st.secrets["langsmith"]["LANGSMITH_API_KEY"], "strands-mcp-agent", True)
 
 # --- App ---
 st.title("Microsoft Learning Agent")
@@ -141,40 +149,44 @@ if "messages" not in st.session_state:
 # 履歴からチャットメッセージを表示
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        # contentは必ずlist形式で格納されている前提
+        text = "".join([c.get("text", "") for c in message["content"]])
+        st.markdown(text)
 
 # ユーザーの入力を受け付ける
 if prompt := st.chat_input("質問を入力してください"):
-    # ユーザーメッセージを履歴に追加して表示
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+    if prompt and prompt.strip():
+        # ユーザーメッセージを画面に表示（まだ履歴には保存しない）
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
-    # アシスタントの応答
-    with st.chat_message("assistant"):
-        with st.spinner("回答を生成中…"):
-            client = create_mcp_client(MICROSOFT_LEARNING_MCP_URL)
-            clients = [client]
-            try:
-                for client in clients:
-                    client.__enter__()
+        # アシスタントの応答
+        with st.chat_message("assistant"):
+            with st.spinner("回答を生成中…"):
+                client = create_mcp_client(MICROSOFT_LEARNING_MCP_URL)
+                clients = [client]
+                try:
+                    for client in clients:
+                        client.__enter__()
 
-                agent = create_agent(clients)
+                    # 過去の履歴のみでAgentを作成
+                    agent = create_agent(clients, messages=st.session_state.messages.copy())
 
-                # 非同期でレスポンスをストリーミング
-                response = asyncio.run(stream_response(agent, prompt))
+                    # 最新のユーザー入力（str）をstream_responseに渡してレスポンスをストリーミング
+                    response = asyncio.run(stream_response(agent, prompt))
 
-                # アシスタントの完全な応答を履歴に追加
-                st.session_state.messages.append({"role": "assistant", "content": response})
+                    # AIの応答が完了したら、ユーザー入力とAI応答を履歴に保存
+                    st.session_state.messages.append({"role": "user", "content": [{"text": prompt}]})
+                    st.session_state.messages.append({"role": "assistant", "content": [{"text": response}]})
 
-            except asyncio.TimeoutError:
-                st.error("タイムアウトエラーが発生しました。もう一度お試しください。")
-            except Exception as e:
-                st.error(f"エラーが発生しました: {str(e)}")
-                st.info("Microsoft Learning MCPサーバーへの接続を確認してください。")
-            finally:
-                for client in clients:
-                    try:
-                        client.__exit__(None, None, None)
-                    except Exception:
-                        pass
+                except asyncio.TimeoutError:
+                    st.error("タイムアウトエラーが発生しました。もう一度お試しください。")
+                except Exception as e:
+                    st.error(f"エラーが発生しました: {str(e)}")
+                    st.info("Microsoft Learning MCPサーバーへの接続を確認してください。")
+                finally:
+                    for client in clients:
+                        try:
+                            client.__exit__(None, None, None)
+                        except Exception:
+                            pass
