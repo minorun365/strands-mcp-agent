@@ -23,7 +23,7 @@ if "aws" in st.secrets:
 # メインエリア
 st.title("Strands MCPエージェント")
 st.markdown("Microsoft Learning MCPを使用して、[Strands Agents SDK](https://aws.amazon.com/jp/blogs/news/introducing-strands-agents-an-open-source-ai-agents-sdk/) を動かしてみよう！")
-question = st.text_area("質問を入力", "このブログにアクセスして、出てくるAWS用語をドキュメントで調べて解説して。 https://qiita.com/minorun365/items/baa5038b5bfa4e35f6ad", height=80)
+question = st.text_area("質問を入力", "Microsoft Azureとは何ですか？主要なサービスについて教えてください。", height=80)
 
 # Microsoft Learning MCP設定（固定）
 MICROSOFT_LEARNING_MCP_URL = "https://learn.microsoft.com/api/mcp"
