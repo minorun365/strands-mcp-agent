@@ -58,7 +58,7 @@ def create_mcp_client(mcp_url):
     return MCPClient(transport)
 
 
-def create_agent(clients, messages=None):
+def create_agent(clients, model_id="gpt-4.1", messages=None):
     """複数のMCPクライアントからツールを集約してエージェントを作成。messagesで履歴も渡せる"""
     all_tools = []
     for client in clients:
@@ -69,7 +69,7 @@ def create_agent(clients, messages=None):
         client_args={
             "api_key": os.getenv("OPENAI_API_KEY"),
         },
-        model_id="gpt-4.1",
+        model_id=model_id,
         params={
             "max_tokens": 1000,
             "temperature": 0.5,
@@ -135,6 +135,17 @@ async def stream_response(agent, latest_user_input):
 if "langsmith" in st.secrets:
     setup_langsmith_tracing(st.secrets["langsmith"]["LANGSMITH_API_KEY"], "strands-mcp-agent", True)
 
+# サイドバーでモデル選択
+with st.sidebar:
+    st.header("⚙️ 設定")
+    selected_model = st.selectbox(
+        "使用するモデルを選択してください",
+        options=["gpt-4.1", "o3"],
+        index=0,  # デフォルトはgpt-4.1
+        help="AIモデルを選択できます。o3は最新のモデルです。"
+    )
+    st.info(f"選択中のモデル: **{selected_model}**")
+
 # --- App ---
 st.title("Microsoft Learning Agent")
 st.markdown(
@@ -170,7 +181,7 @@ if prompt := st.chat_input("質問を入力してください"):
                         client.__enter__()
 
                     # 過去の履歴のみでAgentを作成
-                    agent = create_agent(clients, messages=st.session_state.messages.copy())
+                    agent = create_agent(clients, model_id=selected_model, messages=st.session_state.messages.copy())
 
                     # 最新のユーザー入力（str）をstream_responseに渡してレスポンスをストリーミング
                     response = asyncio.run(stream_response(agent, prompt))
