@@ -48,6 +48,10 @@ def setup_langsmith_tracing(api_key, project_name, enabled=True):
 # Microsoft Learning MCP設定（固定）
 MICROSOFT_LEARNING_MCP_URL = "https://learn.microsoft.com/api/mcp"
 
+# モデル選択設定
+SUPPORTED_MODELS = ["gpt-4.1", "o3"]
+DEFAULT_MODEL_INDEX = 0  # デフォルトはgpt-4.1
+
 
 def create_mcp_client(mcp_url):
     """MCPクライアントを作成（HTTP形式）"""
@@ -140,8 +144,8 @@ with st.sidebar:
     st.header("⚙️ 設定")
     selected_model = st.selectbox(
         "使用するモデルを選択してください",
-        options=["gpt-4.1", "o3"],
-        index=0,  # デフォルトはgpt-4.1
+        options=SUPPORTED_MODELS,
+        index=DEFAULT_MODEL_INDEX,
         help="AIモデルを選択できます。o3は最新のモデルです。"
     )
     st.info(f"選択中のモデル: **{selected_model}**")
