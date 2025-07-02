@@ -74,10 +74,6 @@ def create_agent(clients, model_id="gpt-4.1", messages=None):
             "api_key": os.getenv("OPENAI_API_KEY"),
         },
         model_id=model_id,
-        params={
-            "max_tokens": 1000,
-            "temperature": 0.5,
-        },
     )
     if messages is not None:
         return Agent(model=model, tools=all_tools, messages=messages)
@@ -110,8 +106,6 @@ async def stream_response(agent, latest_user_input):
     full_response = ""
     shown_tools = set()
 
-    # 最新のユーザー入力をstream_asyncに渡す
-    print("Streaming response for user input:", latest_user_input)
     async for chunk in agent.stream_async(latest_user_input):
         if isinstance(chunk, dict):
             tool_id, tool_name = extract_tool_info(chunk)
