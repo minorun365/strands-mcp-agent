@@ -71,16 +71,13 @@ export LANGSMITH_API_KEY="your-langsmith-api-key"
 - シンプルな質問・回答インターフェース
 
 #### 4. 認証とシークレット管理
-- ローカル開発: 環境変数
-  - OPENAI_API_KEY: OpenAI API認証
+- 環境変数で直接設定
+  - OPENAI_API_KEY: OpenAI API認証（必須）
   - LANGSMITH_API_KEY: LangSmithトレース（オプション）
-- Streamlit Community Cloud: `.streamlit/secrets.toml`を使用
-  ```toml
-  [openai]
-  OPENAI_API_KEY = "your-openai-api-key"
-  
-  [langsmith]
-  LANGSMITH_API_KEY = "your-langsmith-api-key"
+- 設定例:
+  ```bash
+  export OPENAI_API_KEY="your-openai-api-key"
+  export LANGSMITH_API_KEY="your-langsmith-api-key"
   ```
 
 ## 重要な注意点
@@ -88,7 +85,7 @@ export LANGSMITH_API_KEY="your-langsmith-api-key"
 1. **MCPサーバー接続**: Microsoft Learning MCPサーバーにHTTPプロトコルで接続
 2. **非同期処理**: asyncioを使用してストリーミングレスポンスを実装
 3. **エラーハンドリング**: MCPサーバー接続エラーやOpenAI API認証エラーに注意
-4. **デプロイ**: Streamlit Community Cloudへのデプロイ時はOpenAI API キーの設定が必須
+4. **デプロイ**: 環境変数としてOpenAI API キーの設定が必須
 5. **LangSmithトレース**: OTELエンドポイント経由でトレース情報を送信（オプション機能）
 
 ## GitHub Actions
@@ -102,5 +99,5 @@ Claude Code Actionが設定されており、以下のトリガーで動作:
 1. Microsoft Learning MCPサーバーは固定設定のため、変更不要
 2. OpenAI GPT-4.1モデルを使用（temperature=0.5に設定）
 3. ツール実行の可視化により、エージェントの動作を把握しやすい設計
-4. LangSmithトレースは環境変数/シークレットから自動設定されるオプション機能
+4. LangSmithトレースは環境変数から自動設定されるオプション機能
 5. OTEL形式でトレースデータがLangSmithに自動送信される
